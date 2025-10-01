@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Eva Assistant Widget- CHROME
 // @namespace    http://tampermonkey.net/
-// @version      9.9.5
-// @description  Eva Widget - Fixed Icon Positioning
+// @version      9.9.9
+// @description  Eva Widget - Fixed Perimeter Animation & Shorter Widget
 // @author       You
 // @match        *://*/*
 // @updateURL    https://github.com/charliefowle03/EvaAIassistant/blob/main/Eva%20Assistant%20Widget%20DC%20Style%20v9.8%20-%20DEBUG-9.9.73.user.js
@@ -180,6 +180,179 @@
         GM_setValue('fileAttachMode', false);
         GM_setValue('cameFromWidget', false);
 
+        // FIXED PAPERCLIP ANIMATION - ONLY PERIMETER GLOW
+        const addPaperclipAnimation = () => {
+            console.log('🎯 Adding paperclip perimeter animation styles');
+            
+            GM_addStyle(`
+                /* Circulating Perimeter Light Animation */
+                @keyframes evaPerimeterCirculate {
+                    0% {
+                        box-shadow: 
+                            2px 0 0 0 rgba(255, 153, 0, 1),
+                            2px 0 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    12.5% {
+                        box-shadow: 
+                            2px -2px 0 0 rgba(255, 153, 0, 1),
+                            2px -2px 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    25% {
+                        box-shadow: 
+                            0 -2px 0 0 rgba(255, 153, 0, 1),
+                            0 -2px 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    37.5% {
+                        box-shadow: 
+                            -2px -2px 0 0 rgba(255, 153, 0, 1),
+                            -2px -2px 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    50% {
+                        box-shadow: 
+                            -2px 0 0 0 rgba(255, 153, 0, 1),
+                            -2px 0 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    62.5% {
+                        box-shadow: 
+                            -2px 2px 0 0 rgba(255, 153, 0, 1),
+                            -2px 2px 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    75% {
+                        box-shadow: 
+                            0 2px 0 0 rgba(255, 153, 0, 1),
+                            0 2px 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    87.5% {
+                        box-shadow: 
+                            2px 2px 0 0 rgba(255, 153, 0, 1),
+                            2px 2px 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                    100% {
+                        box-shadow: 
+                            2px 0 0 0 rgba(255, 153, 0, 1),
+                            2px 0 8px 0 rgba(255, 153, 0, 0.8),
+                            0 0 0 1px rgba(255, 153, 0, 0.2) !important;
+                    }
+                }
+
+                /* Animation Class - ONLY PERIMETER EFFECT */
+                .eva-paperclip-animate {
+                    animation: evaPerimeterCirculate 2s linear infinite !important;
+                    border-radius: 6px !important;
+                    position: relative !important;
+                    z-index: 1000 !important;
+                }
+
+                /* Keep SVG/Icon Normal - NO CHANGES */
+                .eva-paperclip-animate svg,
+                .eva-paperclip-animate svg path {
+                    /* Preserve original styling - no filters or changes */
+                }
+            `);
+        };
+
+        // FIND AND ANIMATE PAPERCLIP BUTTON
+        const findAndAnimatePaperclip = () => {
+            console.log('🎯 Looking for paperclip button to animate');
+            
+            // Look for the paperclip button using the path you provided
+            const paperclipPath = document.querySelector('path[d="M14.828 7.757l-5.656 5.657a1 1 0 1 0 1.414 1.414l5.657-5.656A3 3 0 1 0 12 4.929l-5.657 5.657a5 5 0 1 0 7.071 7.07L19.071 12l1.414 1.414-5.657 5.657a7 7 0 1 1-9.9-9.9l5.658-5.656a5 5 0 0 1 7.07 7.07L12 16.244A3 3 0 1 1 7.757 12l5.657-5.657 1.414 1.414z"]');
+            
+            if (paperclipPath) {
+                console.log('🎯 Found paperclip path, finding button container');
+                
+                // Find the button container (usually a few levels up)
+                let buttonContainer = paperclipPath.closest('button');
+                if (!buttonContainer) {
+                    buttonContainer = paperclipPath.closest('[role="button"]');
+                }
+                if (!buttonContainer) {
+                    buttonContainer = paperclipPath.closest('div[class*="button"]');
+                }
+                if (!buttonContainer) {
+                    // Try to find clickable parent
+                    let parent = paperclipPath.parentElement;
+                    while (parent && parent !== document.body) {
+                        if (parent.onclick || parent.addEventListener || parent.style.cursor === 'pointer') {
+                            buttonContainer = parent;
+                            break;
+                        }
+                        parent = parent.parentElement;
+                    }
+                }
+                
+                if (buttonContainer) {
+                    console.log('🎯 Found button container, applying perimeter animation');
+                    buttonContainer.classList.add('eva-paperclip-animate');
+                    
+                    // Stop animation after 15 seconds or when clicked
+                    setTimeout(() => {
+                        if (buttonContainer.classList.contains('eva-paperclip-animate')) {
+                            buttonContainer.classList.remove('eva-paperclip-animate');
+                            console.log('🎯 Animation stopped after 15 seconds');
+                        }
+                    }, 15000);
+                    
+                    // Stop animation when clicked
+                    buttonContainer.addEventListener('click', () => {
+                        setTimeout(() => {
+                            buttonContainer.classList.remove('eva-paperclip-animate');
+                            console.log('🎯 Animation stopped after click');
+                        }, 1000);
+                    }, { once: true });
+                    
+                    return true;
+                } else {
+                    console.log('🎯 Could not find button container for paperclip');
+                }
+            } else {
+                console.log('🎯 Paperclip path not found, trying alternative selectors');
+                
+                // Alternative selectors for attachment buttons
+                const alternativeSelectors = [
+                    'button[aria-label*="attach"]',
+                    'button[title*="attach"]',
+                    'button[aria-label*="file"]',
+                    'button[title*="file"]',
+                    '[role="button"][aria-label*="attach"]'
+                ];
+                
+                for (const selector of alternativeSelectors) {
+                    try {
+                        const button = document.querySelector(selector);
+                        if (button) {
+                            console.log('🎯 Found attachment button with alternative selector:', selector);
+                            button.classList.add('eva-paperclip-animate');
+                            
+                            setTimeout(() => {
+                                button.classList.remove('eva-paperclip-animate');
+                            }, 15000);
+                            
+                            button.addEventListener('click', () => {
+                                setTimeout(() => {
+                                    button.classList.remove('eva-paperclip-animate');
+                                }, 1000);
+                            }, { once: true });
+                            
+                            return true;
+                        }
+                    } catch (e) {
+                        // Selector might not be supported, continue
+                    }
+                }
+            }
+            
+            return false;
+        };
+
         if (!cameFromWidget && !storedPrompt && !isFileMode) {
             return;
         }
@@ -241,6 +414,9 @@
 
             await new Promise(resolve => setTimeout(resolve, 800));
 
+            // Add animation styles first
+            addPaperclipAnimation();
+
             if (storedPrompt && (cameFromWidget || isFileMode)) {
                 let input = null;
                 for (let i = 0; i < 20; i++) {
@@ -259,6 +435,34 @@
                     }
                 }
             }
+
+            // Try to find and animate paperclip button for file mode
+            if (isFileMode) {
+                console.log('🎯 File mode detected, looking for paperclip to animate');
+                
+                // Try multiple times as the button might load dynamically
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                const tryAnimate = () => {
+                    if (findAndAnimatePaperclip()) {
+                        console.log('🎯 Successfully animated paperclip button');
+                        return;
+                    }
+                    
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(tryAnimate, 500);
+                    } else {
+                        console.log('🎯 Could not find paperclip button after', maxAttempts, 'attempts');
+                    }
+                };
+                
+                // Start trying immediately and also after delays
+                tryAnimate();
+                setTimeout(tryAnimate, 1000);
+                setTimeout(tryAnimate, 2000);
+            }
         };
 
         executeFaster();
@@ -272,8 +476,9 @@
 
     const getZoomResistantDimensions = () => {
         const zoom = getZoomLevel();
-        const baseWidth = 181.45;
-        const baseHeight = 34.38;
+        const baseWidth = 220;
+        // MADE WIDGET 25% SHORTER
+        const baseHeight = 25.785; // 34.38 * 0.75 = 25% shorter
         const minWidth = 33.43;
 
         return {
@@ -288,7 +493,6 @@
         return `${baseKey}_${domain}`;
     };
 
-    // SIMPLIFIED POSITION MANAGEMENT
     const savePosition = (x, y) => {
         try {
             const posKey = getDomainKey('evaWidgetPosition');
@@ -330,13 +534,11 @@
         }
     };
 
-    // IMPROVED DRAGGABLE - DRAG FROM ANYWHERE BUT PRESERVE TEXT CURSOR
     const makeDraggable = (el, input) => {
         let isDragging = false;
         let startX, startY, initialX, initialY;
 
         const startDrag = (e) => {
-            // Don't start drag if clicking directly on the input field
             if (e.target === input) {
                 return;
             }
@@ -358,7 +560,6 @@
             const newX = initialX + (e.clientX - startX);
             const newY = initialY + (e.clientY - startY);
             
-            // Keep on screen
             const maxX = window.innerWidth - el.offsetWidth;
             const maxY = window.innerHeight - el.offsetHeight;
             
@@ -378,12 +579,10 @@
             }
         };
 
-        // Add event listeners
         el.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', doDrag);
         document.addEventListener('mouseup', endDrag);
 
-        // Ensure input field shows text cursor when hovered
         input.addEventListener('mouseenter', () => {
             if (!isDragging) {
                 input.style.cursor = 'text';
@@ -504,7 +703,7 @@
             background: ${currentTheme.background} !important;
             border: 2px solid ${currentTheme.border} !important;
             border-radius: 4px !important;
-            padding: 4px 6px !important;
+            padding: 3px 6px !important;
             z-index: 2147483647 !important;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
             font-family: Arial, sans-serif !important;
@@ -515,6 +714,7 @@
             display: flex !important;
             align-items: center !important;
             box-sizing: border-box !important;
+            overflow: visible !important;
         `;
 
         const inputContainer = document.createElement('div');
@@ -523,17 +723,17 @@
             align-items: center !important;
             width: 100% !important;
             height: 100% !important;
-            gap: 6px !important;
+            gap: 4px !important;
             justify-content: ${isMin ? 'center' : 'space-between'} !important;
             position: relative !important;
             z-index: 1 !important;
+            overflow: visible !important;
         `;
 
         const input = document.createElement('input');
         input.type = 'text';
         input.placeholder = 'Ask Eva...';
         input.id = 'eva-search-input';
-        // DISABLE AUTOCOMPLETE AND SUGGESTIONS
         input.autocomplete = 'off';
         input.autocapitalize = 'off';
         input.autocorrect = 'off';
@@ -546,12 +746,11 @@
         input.setAttribute('data-form-type', 'other');
         
         input.style.cssText = `
-            flex: 1 !important;
-            height: 22px !important;
+            height: 18px !important;
             padding: 0 6px !important;
             border: none !important;
             border-radius: 3px !important;
-            font-size: 12px !important;
+            font-size: 11px !important;
             font-family: Arial, sans-serif !important;
             color: ${currentTheme.inputText} !important;
             background-color: ${currentTheme.inputBg} !important;
@@ -560,24 +759,27 @@
             cursor: text !important;
             position: relative !important;
             z-index: 2 !important;
+            flex: 1 !important;
+            min-width: 0 !important;
+            width: calc(100% - 28px) !important;
         `;
 
-        // FIXED PAPERCLIP ICON - Proper positioning and z-index
         const attachBtn = document.createElement('div');
-        attachBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19c-1.28 1.28-2.98 1.98-4.78 1.98s-3.5-.7-4.78-1.98c-2.64-2.64-2.64-6.92 0-9.56l9.19-9.19c.94-.94 2.2-1.46 3.54-1.46s2.6.52 3.54 1.46c1.95 1.95 1.95 5.12 0 7.07l-9.19 9.19c-.64.64-1.49 1-2.39 1s-1.75-.36-2.39-1c-1.32-1.32-1.32-3.46 0-4.78l8.48-8.48" fill="none" stroke="${currentTheme.iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        attachBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19c-1.28 1.28-2.98 1.98-4.78 1.98s-3.5-.7-4.78-1.98c-2.64-2.64-2.64-6.92 0-9.56l9.19-9.19c.94-.94 2.2-1.46 3.54-1.46s2.6.52 3.54 1.46c1.95 1.95 1.95 5.12 0 7.07l-9.19 9.19c-.64.64-1.49 1-2.39 1s-1.75-.36-2.39-1c-1.32-1.32-1.32-3.46 0-4.78l8.48-8.48" fill="none" stroke="${currentTheme.iconColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         attachBtn.style.cssText = `
             cursor: pointer !important;
-            padding: 4px !important;
+            padding: 2px !important;
             border-radius: 3px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            width: 24px !important;
-            height: 24px !important;
+            width: 18px !important;
+            height: 18px !important;
             flex-shrink: 0 !important;
             position: relative !important;
             z-index: 3 !important;
             background: transparent !important;
+            overflow: visible !important;
         `;
         attachBtn.title = 'Attach file to Eva';
 
@@ -586,14 +788,14 @@
             btn.innerHTML = arrow;
             btn.style.cssText = `
                 position: absolute !important;
-                ${side}: -8px !important;
+                ${side}: -6px !important;
                 top: 50% !important;
                 transform: translateY(-50%) !important;
-                width: 8px !important;
-                height: 20px !important;
+                width: 6px !important;
+                height: 16px !important;
                 background: ${currentTheme.buttonBg} !important;
                 color: ${currentTheme.buttonText} !important;
-                font-size: 8px !important;
+                font-size: 7px !important;
                 cursor: pointer !important;
                 border-radius: ${side === 'left' ? '3px 0 0 3px' : '0 3px 3px 0'} !important;
                 display: flex !important;
@@ -639,12 +841,14 @@
                 input.style.display = 'none';
                 container.style.width = newDim.width + 'px';
                 inputContainer.style.justifyContent = 'center';
+                inputContainer.style.gap = '0px';
                 leftBtn.innerHTML = '◀';
                 rightBtn.innerHTML = '▶';
             } else {
                 input.style.display = 'block';
                 container.style.width = newDim.width + 'px';
                 inputContainer.style.justifyContent = 'space-between';
+                inputContainer.style.gap = '4px';
                 leftBtn.innerHTML = '▶';
                 rightBtn.innerHTML = '◀';
             }
@@ -681,11 +885,9 @@
         container.append(inputContainer, leftBtn, rightBtn);
         document.body.appendChild(container);
 
-        // IMPROVED DRAGGING - Pass input element to preserve text cursor
         makeDraggable(container, input);
         listenForThemeChanges(applyTheme);
 
-        // Only save position on page unload
         window.addEventListener('beforeunload', () => {
             savePosition(parseInt(container.style.left), parseInt(container.style.top));
         });
@@ -701,7 +903,6 @@
         }
     };
 
-    // Simple watchdog - just check if widget exists
     setInterval(() => {
         if (!document.getElementById('eva-search-box')) {
             createWidget();
