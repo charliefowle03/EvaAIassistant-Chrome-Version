@@ -1,10 +1,14 @@
 // ==UserScript==
-// @name         Eva Assistant Widget - Chrome Optimized Adjusted
+// @name         Eva Assistant Widget - Chrome Optimized
 // @namespace    http://tampermonkey.net/
 // @version      10.5.0
 // @description  Eva Widget - Chrome Optimized with Adjusted Length and Black Theme Text
 // @author       Enhanced Version
 // @match        *://*/*
+// @updateURL    https://raw.githubusercontent.com/charliefowle03/EvaAIassistant-Chrome-Version/main/Eva%20Assistant%20-%20Chrome%20Version
+// @downloadURL  https://raw.githubusercontent.com/charliefowle03/EvaAIassistant-Chrome-Version/main/Eva%20Assistant%20-%20Chrome%20Version
+// @supportURL   https://github.com/charliefowle03/EvaAIassistant-Chrome-Version
+// @homepageURL  https://github.com/charliefowle03/EvaAIassistant-Chrome-Version
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_addStyle
